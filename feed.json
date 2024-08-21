@@ -7,6 +7,42 @@
 	"items": [
 		
 			{
+				"id": "http://rickardlindberg.micro.blog/2024/08/21/did-another-bike.html",
+				
+				"content_html": "<p>Did another bike workout at the gym. Similar heart rate and duration as my regular runs, but felt like more effort because I&rsquo;m not used to cycling. I&rsquo;d rather be running, but this is a good alternative. Listened to <a href=\"https://hejinter.net/avsnitt-2/\">Hej (resten av) internet! Avsnitt 2: Nyhetsbrev (eller brev kort och gott)</a>.</p>\n",
+				"content_text": "Did another bike workout at the gym. Similar heart rate and duration as my regular runs, but felt like more effort because I'm not used to cycling. I'd rather be running, but this is a good alternative. Listened to [Hej (resten av) internet! Avsnitt 2: Nyhetsbrev (eller brev kort och gott)](https://hejinter.net/avsnitt-2/).\r\n",
+				"date_published": "2024-08-21T21:44:52+02:00",
+				"url": "https://rickardlindberg.me/2024/08/21/did-another-bike.html",
+				"tags": ["Running"]
+			},
+			{
+				"id": "http://rickardlindberg.micro.blog/2024/08/19/today-i-bought.html",
+				
+				"content_html": "<p>Today I bought a gym membership. I spent another 40 minutes on the bike. I felt good after the workout, but I didn&rsquo;t get any ideas or inspiration like I usually do when I&rsquo;m running. Hopefully I can incorporate some runs soon, but I will for sure continue biking to help build an aerobic base.</p>\n",
+				"content_text": "Today I bought a gym membership. I spent another 40 minutes on the bike. I felt good after the workout, but I didn't get any ideas or inspiration like I usually do when I'm running. Hopefully I can incorporate some runs soon, but I will for sure continue biking to help build an aerobic base.\r\n",
+				"date_published": "2024-08-19T21:12:41+02:00",
+				"url": "https://rickardlindberg.me/2024/08/19/today-i-bought.html",
+				"tags": ["Running"]
+			},
+			{
+				"id": "http://rickardlindberg.micro.blog/2024/08/18/yes-the-draft.html",
+				
+				"content_html": "<p>Yes! The draft makes sense now. I think. I had a rough idea of what I wanted to write about. I had lots of notes that I struggled to fit into a coherent narrative. But finally, it all fell into place. I clarified my thinking by writing.</p>\n",
+				"content_text": "Yes! The draft makes sense now. I think. I had a rough idea of what I wanted to write about. I had lots of notes that I struggled to fit into a coherent narrative. But finally, it all fell into place. I clarified my thinking by writing.\n",
+				"date_published": "2024-08-18T22:38:26+02:00",
+				"url": "https://rickardlindberg.me/2024/08/18/yes-the-draft.html",
+				"tags": ["Writing"]
+			},
+			{
+				"id": "http://rickardlindberg.micro.blog/2024/08/17/today-i-spent.html",
+				
+				"content_html": "<p>Today I spent 40 minutes on a bike in the gym. I&rsquo;d rather be running, but I&rsquo;ve got some pain in my achilles tendon, so I explore alternative training at the moment. For this workout, I happened to discover the (Swedish) podcast <a href=\"https://hejinter.net/\">Hej (resten av) internet!</a> It feels like an entry into an alternative, beautiful web-universe. I look forward to more workouts with them in my ears.</p>\n",
+				"content_text": "Today I spent 40 minutes on a bike in the gym. I'd rather be running, but I've got some pain in my achilles tendon, so I explore alternative training at the moment. For this workout, I happened to discover the (Swedish) podcast [Hej (resten av) internet!](https://hejinter.net/) It feels like an entry into an alternative, beautiful web-universe. I look forward to more workouts with them in my ears.\n",
+				"date_published": "2024-08-17T21:49:57+02:00",
+				"url": "https://rickardlindberg.me/2024/08/17/today-i-spent.html",
+				"tags": ["Running"]
+			},
+			{
 				"id": "http://rickardlindberg.micro.blog/2024/08/11/its-time-for.html",
 				
 				"content_html": "<p>It&rsquo;s time for a new avatar. I&rsquo;m thinking I should update them more frequently. Maybe yearly? Anyway, here is the new one.</p>\n<!-- raw HTML omitted -->\n",
@@ -18,7 +54,7 @@
 				"id": "http://rickardlindberg.micro.blog/2024/08/11/its-like-its.html",
 				
 				"content_html": "<p>It&rsquo;s like it&rsquo;s all out there. Energy, motivation, well being, creativity&hellip; You just have to put on a pair of shoes and go out and get it. That&rsquo;s why I run.</p>\n<!-- raw HTML omitted -->\n",
-				"content_text": "It's like it's all out there. Energy, motivation, well being, creativity... You just have to put on a pair of shoes and go out and get it. That's why I run.\r\n\r\n<img src=\"uploads/2024/running-20240811.jpg\" width=\"600\" height=\"337\" alt=\"Me running.\">\n",
+				"content_text": "It's like it's all out there. Energy, motivation, well being, creativity... You just have to put on a pair of shoes and go out and get it. That's why I run.\r\n\r\n<img src=\"https://rickardlindberg.me/uploads/2024/running-20240811.jpg\" width=\"600\" height=\"337\" alt=\"Me running.\">\n",
 				"date_published": "2024-08-11T13:18:13+02:00",
 				"url": "https://rickardlindberg.me/2024/08/11/its-like-its.html",
 				"tags": ["Running"]
@@ -27,7 +63,7 @@
 				"id": "http://rickardlindberg.micro.blog/2024/08/11/how-i-found.html",
 				"title": "How I found out about Micro.blog",
 				"content_html": "<p>When I was researching the Zettelkasten method (a specific way to take notes),\nI ended up on <a href=\"https://writingslowly.com/2024/07/14/a-system-for.html\">Writing\nSlowly</a>. It looked like\nthis:</p>\n<p><!-- raw HTML omitted --></p>\n<p>Besides the content, that I was also interested in, I thought that this was a\nnice looking blog. It had a clutter free UI, nice formatting, and support for\npages and categories. I thought that I would like to have this as well. (My\ncurrent blog that is hosted as a static site on GitHub Pages is in need for an\nupdate.)</p>\n<p>Then I noticed this at the bottom of Writing Slowly:</p>\n<p><!-- raw HTML omitted --></p>\n<p>It looks like <a href=\"https://micro.blog/\">Micro.blog</a> hosts the blog. And that posts\ncan be commented on via the Fediverse as well. This looks cool.</p>\n<p>I started reading about it. Both in the book <a href=\"https://book.micro.blog/\">Indie Microblogging by Manton\nReece</a> and on their <a href=\"https://micro.blog/about\">about</a>\nand <a href=\"https://help.micro.blog/t/help-documents-table-of-contents/311\">help</a>\npage. I got more and more intrigued. I decided to try it out, and about a week\nafter accidentally stumbling across Micro.blog, I had moved my blog there.</p>\n<p>I&rsquo;m looking forward to exploring this new universe at Micro.blog.</p>\n",
-				"content_text": "When I was researching the Zettelkasten method (a specific way to take notes),\r\nI ended up on [Writing\r\nSlowly](https://writingslowly.com/2024/07/14/a-system-for.html). It looked like\r\nthis:\r\n\r\n<img\r\nsrc=\"https://rickardlindberg.me/uploads/2024/writingslowly-zettelkasten.png\"\r\nwidth=\"600\" height=\"503\" alt=\"Screenshot of Writing Slowly website.\">\r\n\r\nBesides the content, that I was also interested in, I thought that this was a\r\nnice looking blog. It had a clutter free UI, nice formatting, and support for\r\npages and categories. I thought that I would like to have this as well. (My\r\ncurrent blog that is hosted as a static site on GitHub Pages is in need for an\r\nupdate.)\r\n\r\nThen I noticed this at the bottom of Writing Slowly:\r\n\r\n<img src=\"uploads/2024/writingslowly-micro-blog.png\"\r\nwidth=\"600\" height=\"517\" alt=\"Screenshot of Writing Slowly Micro.blog link.\">\r\n\r\nIt looks like [Micro.blog](https://micro.blog/) hosts the blog. And that posts\r\ncan be commented on via the Fediverse as well. This looks cool.\r\n\r\nI started reading about it. Both in the book [Indie Microblogging by Manton\r\nReece](https://book.micro.blog/) and on their [about](https://micro.blog/about)\r\nand [help](https://help.micro.blog/t/help-documents-table-of-contents/311)\r\npage. I got more and more intrigued. I decided to try it out, and about a week\r\nafter accidentally stumbling across Micro.blog, I had moved my blog there.\r\n\r\nI'm looking forward to exploring this new universe at Micro.blog.\r\n",
+				"content_text": "When I was researching the Zettelkasten method (a specific way to take notes),\r\nI ended up on [Writing\r\nSlowly](https://writingslowly.com/2024/07/14/a-system-for.html). It looked like\r\nthis:\r\n\r\n<img\r\nsrc=\"https://rickardlindberg.me/uploads/2024/writingslowly-zettelkasten.png\"\r\nwidth=\"600\" height=\"503\" alt=\"Screenshot of Writing Slowly website.\">\r\n\r\nBesides the content, that I was also interested in, I thought that this was a\r\nnice looking blog. It had a clutter free UI, nice formatting, and support for\r\npages and categories. I thought that I would like to have this as well. (My\r\ncurrent blog that is hosted as a static site on GitHub Pages is in need for an\r\nupdate.)\r\n\r\nThen I noticed this at the bottom of Writing Slowly:\r\n\r\n<img src=\"https://rickardlindberg.me/uploads/2024/writingslowly-micro-blog.png\"\r\nwidth=\"600\" height=\"517\" alt=\"Screenshot of Writing Slowly Micro.blog link.\">\r\n\r\nIt looks like [Micro.blog](https://micro.blog/) hosts the blog. And that posts\r\ncan be commented on via the Fediverse as well. This looks cool.\r\n\r\nI started reading about it. Both in the book [Indie Microblogging by Manton\r\nReece](https://book.micro.blog/) and on their [about](https://micro.blog/about)\r\nand [help](https://help.micro.blog/t/help-documents-table-of-contents/311)\r\npage. I got more and more intrigued. I decided to try it out, and about a week\r\nafter accidentally stumbling across Micro.blog, I had moved my blog there.\r\n\r\nI'm looking forward to exploring this new universe at Micro.blog.\r\n",
 				"date_published": "2024-08-11T09:36:57+02:00",
 				"url": "https://rickardlindberg.me/2024/08/11/how-i-found.html",
 				"tags": ["Micro.blog"]
@@ -36,7 +72,7 @@
 				"id": "http://rickardlindberg.micro.blog/2024/08/11/i-just-implemented.html",
 				
 				"content_html": "<p>I just implemented support in <a href=\"https://github.com/rickardlindberg/one-file-programs/tree/master/smartnotes\">Smart Notes</a> for giving links a text description.</p>\n<p>This was inspired by recent readings about <a href=\"https://en.wikipedia.org/wiki/Concept_map\">concept mapping</a> and Zettelkasten resources <a href=\"https://zettelkasten.de/introduction/\">talking about</a> the importance of giving context when linking two ideas.</p>\n<p>I&rsquo;m looking forward to using this to see if I find it helpful.</p>\n<!-- raw HTML omitted -->\n",
-				"content_text": "I just implemented support in [Smart Notes](https://github.com/rickardlindberg/one-file-programs/tree/master/smartnotes) for giving links a text description.\n\nThis was inspired by recent readings about [concept mapping](https://en.wikipedia.org/wiki/Concept_map) and Zettelkasten resources [talking about](https://zettelkasten.de/introduction/) the importance of giving context when linking two ideas.\n\nI'm looking forward to using this to see if I find it helpful.\n\n<img src=\"uploads/2024/smartnotes-link-text-demo.png\" width=\"600\" height=\"323\" alt=\"Screenshot of Smart Notes highlighting link texts.\">\n",
+				"content_text": "I just implemented support in [Smart Notes](https://github.com/rickardlindberg/one-file-programs/tree/master/smartnotes) for giving links a text description.\n\nThis was inspired by recent readings about [concept mapping](https://en.wikipedia.org/wiki/Concept_map) and Zettelkasten resources [talking about](https://zettelkasten.de/introduction/) the importance of giving context when linking two ideas.\n\nI'm looking forward to using this to see if I find it helpful.\n\n<img src=\"https://rickardlindberg.me/uploads/2024/smartnotes-link-text-demo.png\" width=\"600\" height=\"323\" alt=\"Screenshot of Smart Notes highlighting link texts.\">\n",
 				"date_published": "2024-08-11T09:15:41+02:00",
 				"url": "https://rickardlindberg.me/2024/08/11/i-just-implemented.html",
 				"tags": ["Zettelkasten","Smart Notes"]
