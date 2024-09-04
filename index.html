@@ -24,13 +24,545 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://rickardlindberg.me/2024/09/04/bash-redirects-explained.html">Bash Redirects Explained</a></h1>
+		
+
+		<a href="https://rickardlindberg.me/2024/09/04/bash-redirects-explained.html" class="u-url"><time class="dt-published" datetime="2024-09-04 06:39:30 &#43;0200">Sep 4, 2024</time></a>
+
+		<div class="e-content">
+			 <p>I thought I knew how Bash redirects worked.</p>
+<p>If I wanted to redirect the output of a command to a file, I&rsquo;d type this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">program &gt; /tmp/log.txt
+</code></pre></div><p>If I wanted to pipe both stdout and stderr to a text editor for further
+processing, I&rsquo;d type this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">program 2&gt;&amp;<span style="color:#ae81ff">1</span> | vim -
+</code></pre></div><p>I knew that <code>2&gt;&amp;1</code> meant redirect stderr to stdout making it appear on stdout
+as well.</p>
+<p>I knew certain patterns for certain situations. But when I encountered
+situations where I had not learned a pattern, I was lost. For example, I could
+not explain the difference between</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">program 2&gt;&amp;<span style="color:#ae81ff">1</span> &gt;/tmp/log.txt
+</code></pre></div><p>and</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">program &gt;/tmp/log.txt 2&gt;&amp;<span style="color:#ae81ff">1</span>
+</code></pre></div><p>And I got scared when I saw something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">program &lt; input.txt &gt; output.txt 2&gt;&amp;<span style="color:#ae81ff">1</span>
+</code></pre></div><p>Have you also been there? What did you do?</p>
+<p>I would search the Internet for a pattern that matched the use case, or just
+try different alternatives and notice how they behaved.</p>
+<p>I did this until one day when I learned a mental model for how Bash redirects
+work. Now I no longer need to rely on patterns. I can easily parse any
+situation and use any combination of redirects for my purposes.</p>
+<p>The rest of this article explains this mental model.</p>
+<h2 id="the-standard-streams">The Standard Streams</h2>
+<p>A process has three standard streams attached to it:</p>
+<ul>
+<li>stdin (0)</li>
+<li>stdout (1)</li>
+<li>stderr (2)</li>
+</ul>
+<p><!-- raw HTML omitted --></p>
+<p>When we start a program from the terminal, Bash sets up the standard streams as
+follows:</p>
+<ul>
+<li>stdin: terminal/keyboard</li>
+<li>stdout: terminal</li>
+<li>stderr: terminal</li>
+</ul>
+<p>What redirects do is to modify what the standard streams point to before the
+program starts executing.</p>
+<ul>
+<li><code>&lt;</code> means modify stdin.</li>
+<li><code>&gt;</code> means modify stdout.</li>
+<li><code>2&gt;</code> means modify stderr.</li>
+</ul>
+<p>That is the mental model: <strong>redirects modify standard streams before program
+execution</strong>.</p>
+<p>Let&rsquo;s evaluate a few examples using this mental model to see how it works.</p>
+<h2 id="logcat-utility">Logcat Utility</h2>
+<p>To be able to show what happens in different examples, we have a utility
+program, <code>logcat.py</code>, that makes use of all three streams. It reads text from
+stdin, logs the arguments and the length of the text to stderr, and writes the
+text to stdout. It looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python</span>
+
+<span style="color:#f92672">import</span> sys
+
+text <span style="color:#f92672">=</span> sys<span style="color:#f92672">.</span>stdin<span style="color:#f92672">.</span>read()
+
+sys<span style="color:#f92672">.</span>stderr<span style="color:#f92672">.</span>write(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Args: </span><span style="color:#e6db74">{</span>(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>:])<span style="color:#e6db74">}</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+sys<span style="color:#f92672">.</span>stderr<span style="color:#f92672">.</span>write(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Read </span><span style="color:#e6db74">{</span>len(text)<span style="color:#e6db74">}</span><span style="color:#e6db74"> characters.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+
+sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>write(text)
+</code></pre></div><h2 id="example-no-redirect">Example: No Redirect</h2>
+<p>Let&rsquo;s start with an example without redirects to see the operation of
+<code>logcat.py</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./logcat.py ignored arguments
+</code></pre></div><p>Before <code>logcat.py</code> starts executing, Bash sets up the standard streams as
+follows:</p>
+<ul>
+<li>stdin: terminal/keyboard</li>
+<li>stdout: terminal</li>
+<li>stderr: terminal</li>
+</ul>
+<p>When execution starts, <code>logcat.py</code> waits for input. If we type <code>hello</code> in the
+terminal (followed by a return and ctrl+d), the following is printed to the
+terminal:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Args: [&#39;ignored&#39;, &#39;arguments&#39;]
+Read 6 characters.
+hello
+</code></pre></div><p>We can see that it read our input from the terminal/keyboard and wrote the log
+messages along with our input to the terminal as well.</p>
+<h2 id="example-redirect-stdin">Example: Redirect Stdin</h2>
+<p>Now let&rsquo;s modify stdin to instead of the terminal/keyboard be the <code>logcat.py</code>
+source code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./logcat.py ignored arguments &lt;logcat.py
+</code></pre></div><p>This instructs Bash to modify stdin to point to the file <code>logcat.py</code>.</p>
+<p>Before <code>logcat.py</code> starts executing, Bash sets up the standard streams as
+follows:</p>
+<ul>
+<li>stdin: <code>logcat.py</code> (opened in read mode)</li>
+<li>stdout: terminal</li>
+<li>stderr: terminal</li>
+</ul>
+<p>When execution starts, the following is printed to the terminal:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Args: [&#39;ignored&#39;, &#39;arguments&#39;]
+Read 182 characters.
+#!/usr/bin/env python
+
+import sys
+
+text = sys.stdin.read()
+
+sys.stderr.write(f&#34;Args: {(sys.argv[1:])}\n&#34;)
+sys.stderr.write(f&#34;Read {len(text)} characters.\n&#34;)
+
+sys.stdout.write(text)
+</code></pre></div><p>We can see that the redirect operation is stripped from the arguments. Only
+Bash sees it and does not pass it along to the program. Furthermore we can see
+that the <code>logcat.py</code> source code is printed to the terminal.</p>
+<h2 id="example-redirect-stdin-and-stdout">Example: Redirect Stdin and Stdout</h2>
+<p>Let&rsquo;s say we&rsquo;re only interested in the log messages, and want to throw away
+stdout:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./logcat.py ignored arguments &lt;logcat.py &gt;/dev/null
+</code></pre></div><p>This instructs Bash to modify stdin to point to the file <code>logcat.py</code> and to
+modify stdout to point to the file <code>/dev/null</code>.</p>
+<p>Before <code>logcat.py</code> starts executing, Bash sets up the standard streams as
+follows:</p>
+<ul>
+<li>stdin: <code>logcat.py</code> (opened in read mode)</li>
+<li>stdout: <code>/dev/null</code> (opened in write mode)</li>
+<li>stderr: terminal</li>
+</ul>
+<p>When execution starts, the following is printed to the terminal:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Args: [&#39;ignored&#39;, &#39;arguments&#39;]
+Read 182 characters.
+</code></pre></div><p>We can see that the redirect operations are all stripped from the arguments and
+the source code has been written to <code>/dev/null</code> and is thus not shown in the
+terminal.</p>
+<h2 id="extended-mental-model">Extended Mental Model</h2>
+<p>Let&rsquo;s extended the mental model to clarify how Bash operates.</p>
+<p>When Bash parses a command, it divides it into two parts: the arguments and the
+redirects. Before it starts executing the program with the arguments, it goes
+through the redirects, in order, and configures the standard streams before
+execution.</p>
+<h2 id="example-redirect-all-streams">Example: Redirect All Streams</h2>
+<p>Let&rsquo;s see how we can interpret a more complex command using the extended mental
+model:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./logcat.py &lt;logcat.py is the &gt;out.txt best 2&gt;&amp;1 thing
+</code></pre></div><p>If we split this into arguments and redirects, we get this:</p>
+<ul>
+<li>Arguments: <code>./logcat.py</code>, <code>is</code>, <code>the</code>, <code>best</code>, <code>thing</code></li>
+<li>Redirects: <code>&lt;logcat.py</code>, <code>&gt;out.txt</code>, <code>2&gt;&amp;1</code></li>
+</ul>
+<p>Now, let&rsquo;s evaluate the redirects in order. The state of the standard streams
+at start is this:</p>
+<ul>
+<li>stdin: terminal/keyboard</li>
+<li>stdout: terminal</li>
+<li>stderr: terminal</li>
+</ul>
+<p>Then we evaluate <code>&lt;logcat.py</code> and get this:</p>
+<ul>
+<li>stdin: <code>logcat.py</code> (opened in read mode)</li>
+<li>stdout: terminal</li>
+<li>stderr: terminal</li>
+</ul>
+<p>Then we evaluate <code>&gt;out.txt</code> and get this:</p>
+<ul>
+<li>stdin: <code>logcat.py</code> (opened in read mode)</li>
+<li>stdout: <code>out.txt</code> (opened in write mode)</li>
+<li>stderr: terminal</li>
+</ul>
+<p>Then we evaluate <code>2&gt;&amp;1</code>, which means modify stderr (<code>2&gt;</code>) to be whatever
+stdout points to (<code>&amp;1</code>), and get this:</p>
+<ul>
+<li>stdin: <code>logcat.py</code> (opened in read mode)</li>
+<li>stdout: <code>out.txt</code> (opened in write mode)</li>
+<li>stderr: <code>out.txt</code> (opened in write mode)</li>
+</ul>
+<p>After the standard streams have been set up, execution of <code>./logcat.py is the best thing</code> starts. Nothing appears on the terminal since all output has been
+redirected to <code>out.txt</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ cat out.txt
+Args: [&#39;is&#39;, &#39;the&#39;, &#39;best&#39;, &#39;thing&#39;]
+Read 182 characters.
+#!/usr/bin/env python
+
+import sys
+
+text = sys.stdin.read()
+
+sys.stderr.write(f&#34;Args: {(sys.argv[1:])}\n&#34;)
+sys.stderr.write(f&#34;Read {len(text)} characters.\n&#34;)
+
+sys.stdout.write(text)
+</code></pre></div><h2 id="mini-shell">Mini Shell</h2>
+<p>I created a mini version of a shell to demonstrate how straight forward it is
+to implement redirects with POSIX system calls. It works exactly as the
+extended mental model, and because it is running software, it fills in some
+more details of the model. I would guess that Bash does something similar even
+though I haven&rsquo;t read its source code.</p>
+<p>First off, here is a demo that shows how the mini shell can replicate the
+complex example from above:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./minishell.py
+~~?~~&gt; ./logcat.py &lt;logcat.py is the &gt;out.txt best 2&gt;&amp;1 thing
+~~0~~&gt; cat out.txt
+Args: [&#39;is&#39;, &#39;the&#39;, &#39;best&#39;, &#39;thing&#39;]
+Read 182 characters.
+#!/usr/bin/env python
+
+import sys
+
+text = sys.stdin.read()
+
+sys.stderr.write(f&#34;Args: {(sys.argv[1:])}\n&#34;)
+sys.stderr.write(f&#34;Read {len(text)} characters.\n&#34;)
+
+sys.stdout.write(text)
+</code></pre></div><p>And here is the implementation in only 31 lines of Python:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python</span>
+
+<span style="color:#f92672">import</span> os
+<span style="color:#f92672">import</span> sys
+
+STDIN  <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+STDOUT <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+STDERR <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+
+statuscode <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;?&#34;</span>
+<span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+    sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>write(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;~~</span><span style="color:#e6db74">{</span>statuscode<span style="color:#e6db74">}</span><span style="color:#e6db74">~~&gt; &#34;</span>)
+    sys<span style="color:#f92672">.</span>stdout<span style="color:#f92672">.</span>flush()
+    command <span style="color:#f92672">=</span> input()
+    pid <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>fork()
+    <span style="color:#66d9ef">if</span> pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+        args <span style="color:#f92672">=</span> []
+        <span style="color:#66d9ef">for</span> part <span style="color:#f92672">in</span> command<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34; &#34;</span>):
+            <span style="color:#66d9ef">if</span> part<span style="color:#f92672">.</span>startswith(<span style="color:#e6db74">&#34;&lt;&#34;</span>):
+                os<span style="color:#f92672">.</span>dup2(os<span style="color:#f92672">.</span>open(part[<span style="color:#ae81ff">1</span>:], os<span style="color:#f92672">.</span>O_RDONLY), STDIN)
+            <span style="color:#66d9ef">elif</span> part<span style="color:#f92672">.</span>startswith(<span style="color:#e6db74">&#34;&gt;&#34;</span>):
+                os<span style="color:#f92672">.</span>dup2(os<span style="color:#f92672">.</span>open(part[<span style="color:#ae81ff">1</span>:], os<span style="color:#f92672">.</span>O_WRONLY<span style="color:#f92672">|</span>os<span style="color:#f92672">.</span>O_CREAT, <span style="color:#ae81ff">0o644</span>), STDOUT)
+            <span style="color:#66d9ef">elif</span> part <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;2&gt;&amp;1&#34;</span>:
+                os<span style="color:#f92672">.</span>dup2(STDOUT, STDERR)
+            <span style="color:#66d9ef">elif</span> part<span style="color:#f92672">.</span>startswith(<span style="color:#e6db74">&#34;2&gt;&#34;</span>):
+                os<span style="color:#f92672">.</span>dup2(os<span style="color:#f92672">.</span>open(part[<span style="color:#ae81ff">2</span>:], os<span style="color:#f92672">.</span>O_WRONLY<span style="color:#f92672">|</span>os<span style="color:#f92672">.</span>O_CREAT, <span style="color:#ae81ff">0o644</span>), STDERR)
+            <span style="color:#66d9ef">else</span>:
+                args<span style="color:#f92672">.</span>append(part)
+        os<span style="color:#f92672">.</span>execvp(args[<span style="color:#ae81ff">0</span>], args)
+    <span style="color:#66d9ef">else</span>:
+        _, statuscode <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>waitpid(pid, <span style="color:#ae81ff">0</span>)
+</code></pre></div><p>To understand how this works, you need some knowledge of the POSIX system calls
+<code>fork</code>, <code>waitpid</code>, <code>open</code>, <code>dup2</code>, and <code>execvp</code>. But even if you don&rsquo;t
+understand the specifics, I think this codified model can help in understanding
+how Bash operates. Let&rsquo;s look at an example.</p>
+<h2 id="example-duplicated-files">Example: Duplicated Files</h2>
+<p>Let&rsquo;s see if we can explain the difference between the following commands using
+the mini shell for the model:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./logcat.py &lt;logcat.py &gt;out.txt 2&gt;out.txt
+$ ./logcat.py &lt;logcat.py &gt;out.txt 2&gt;&amp;1
+</code></pre></div><p>At a first glance, it looks like both commands redirect both stdout and stderr
+to the <code>out.txt</code> file. But if we evaluate it like mini shell does, we see that
+the first example will open the file twice (two calls to <code>os.open</code> creating two
+file handles), whereas the second example will open the file only once and then
+duplicate the file handle for stderr.</p>
+<p>When two file handles are created, writes to the two streams will attempt to
+write to the same location in the file and they will overwrite each other.
+Furthermore, buffering might alter in which order writes happen, so it is not
+clear what will actually end up in the file. So to make sure all output is
+captured in the file, the second example should be used where the file is only
+opened once.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>There is still more to Bash redirects than what I have explained here. But this
+mental model (along with its extended versions) have helped me reason about
+Bash redirects. I hope it will do the same for you.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+
+		<a href="https://rickardlindberg.me/2024/09/01/i-just-implemented.html" class="u-url"><time class="dt-published" datetime="2024-09-01 18:01:41 &#43;0200">Sep 1, 2024</time></a>
+
+		<div class="e-content">
+			 <p>I just implemented a small shell in 29 lines of Python that has support for redirects:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ./minishell.py 
+~~?~~&gt; echo hello
+hello
+~~0~~&gt; wc -l minishell.py
+29 minishell.py
+~~0~~&gt; wc -l &lt;minishell.py &gt;report.txt
+~~0~~&gt; cat report.txt
+29
+</code></pre></div>
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://rickardlindberg.me/2024/09/01/newsletter-august-smart.html">Newsletter August 2024: Smart Notes and Blogging</a></h1>
+		
+
+		<a href="https://rickardlindberg.me/2024/09/01/newsletter-august-smart.html" class="u-url"><time class="dt-published" datetime="2024-09-01 07:33:59 &#43;0200">Sep 1, 2024</time></a>
+
+		<div class="e-content">
+			 <p>In August I had my last week of summer vacation. I read a book that made me
+want to improve my note taking tool, I did some programming on hobby projects,
+and I migrated my blog to a new platform. All while doing many runs.</p>
+<p><!-- raw HTML omitted --></p>
+<h2 id="a-system-for-writing">A System for Writing</h2>
+<p>I read <em>A System for Writing</em> by Bob Doto. <a href="http://richardcarter.com/reviews/book-review-a-system-for-writing-by-bob-doto/">This
+review</a>
+is what made me buy the book:</p>
+<blockquote>
+<p>When I first tried to get my head around Zettelkasten, I consulted Sönke
+Ahrens’ extremely useful book How to Take Smart Notes. This was—and still
+is—seen as the book to read on the subject. I predict A System for Writing
+will replace it.</p>
+</blockquote>
+<p>I liked Sönke&rsquo;s book, and I was curious to learn more about this topic from a
+source that seemed credible.</p>
+<p>I got some new insights about the Zettelkasten method. In particular the idea
+that it is important to articulate how two ideas relate. I&rsquo;ve previously mostly
+connected ideas without context. The connection was obvious when I made it,
+but most likely less obvious when I come back to it.</p>
+<p>I tried to research this a bit more and found the article <a href="https://zettelkasten.de/posts/backlinks-are-bad-links/">Backlinking Is Not
+Very Useful &ndash; Often Even
+Harmful</a>:</p>
+<blockquote>
+<p>A good link context explains what you can expect if you follow the link. But
+it can also explain the nature of the relationship between both notes.</p>
+</blockquote>
+<p>I wanted to try this out.</p>
+<h2 id="smart-notes">Smart Notes</h2>
+<p>I use my <a href="https://rickardlindberg.me/categories/smart-notes">Smart Notes</a> app
+to take notes using the Zettelkasten method. When I studied the method more, I
+got some new ideas that I implemented:</p>
+<ul>
+<li>
+<p>I configured different note types to show in different colors. Zettelkasten
+has a few different kinds of notes, and quickly being able to see, by color,
+which it is, has been helpful.</p>
+</li>
+<li>
+<p>I added the ability to change the order of notes. This was needed to be able
+to create structure notes with links in specific order.</p>
+</li>
+<li>
+<p>I added the ability to give <a href="https://rickardlindberg.me/2024/08/11/i-just-implemented.html">links a text
+description</a>.
+This is what allowed me to experiment with articulating how two ideas relate
+to each other. I wrote more about the evolution of this feature in <a href="https://rickardlindberg.me/2024/08/29/linking-and-how.html">Linking
+(and how it has evolved) in Smart
+Notes</a>.</p>
+</li>
+</ul>
+<h2 id="one-file-programs">One-File Programs</h2>
+<p>I continued to work on <a href="https://github.com/rickardlindberg/one-file-programs">One-File
+Programs</a>.</p>
+<p>I worked on an engine app that can automatically reload other apps when they
+change. This gives faster feedback, especially when working on graphical
+applications. It is similar to an approach I&rsquo;ve written about previously in
+<a href="https://rickardlindberg.me/2023/07/28/how-to-get.html">How to get fast feedback on graphical
+code?</a></p>
+<p>I also worked on the <a href="https://github.com/rickardlindberg/one-file-programs/tree/master/no-scrollbars">no
+scrollbars</a>
+app. I wanted to see if we can get rid of scrollbars in some GUI elements. The
+idea is to make items larger around the area of the mouse so that they can more
+easily get selected. Here is one screenshot:</p>
+<p><!-- raw HTML omitted --></p>
+<p>I want do continue work with this repo, but the rest of the time this month, I
+spent on my blog.</p>
+<h2 id="microblog">Micro.blog</h2>
+<p>I <a href="https://rickardlindberg.me/2024/08/11/how-i-found.html">found out about
+Micro.blog</a> and moved
+my blog to it.</p>
+<ul>
+<li>
+<p>I documented how I did a redirect to my old archived site for pages that I
+have not yet migrated to the new blog in <a href="https://rickardlindberg.me/2024/08/09/poor-mans-redirect.html">Poor man&rsquo;s redirect in a static
+site</a>.</p>
+</li>
+<li>
+<p>I started a &ldquo;photo blog&rdquo; documenting my
+<a href="https://rickardlindberg.me/categories/running/">runs</a> and how my life
+improves from them.</p>
+</li>
+</ul>
+<p>Some reflections on Micro.blog:</p>
+<ul>
+<li>
+<p>Micro.blog makes it easy to create <a href="https://nicochilla.com/my-website-as-a-home/">a website that feels like a
+home</a>.</p>
+<p>I can share and develop my interests. I can structure content with categories
+and pages. Others can come have a look. Comment if they wish. And you can
+see conversations that I&rsquo;ve had with visitors.</p>
+</li>
+<li>
+<p>It makes blogging fun. It is easy to publish and you can get comments from
+the community on your posts.</p>
+</li>
+</ul>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://rickardlindberg.me/2024/08/29/linking-and-how.html">Linking (and how it has evolved) in Smart Notes</a></h1>
 		
 
 		<a href="https://rickardlindberg.me/2024/08/29/linking-and-how.html" class="u-url"><time class="dt-published" datetime="2024-08-29 07:49:10 &#43;0200">Aug 29, 2024</time></a>
 
 		<div class="e-content">
-			 <p>I created Smart Notes to be a digital note taking application that followsprinciples from the Zettelkasten method, as explained in Sönke Ahren&rsquo;s book<em>How to Take Smart Notes</em>.Two fundamental aspects of the Zettelkasten method are notes and links betweenthem.In a physical Zettelkasten, notes are written on index cards (or some similarformat), given unique, hierarchical ids, and stored sequentially in a slip-box:&lt;img src=&ldquo;uploads/2024/physical-zettelkasten.png&quot;width=&ldquo;600&rdquo; height=&ldquo;458&rdquo; alt=&ldquo;Illustration of physical Zettelkasten.&quot;&gt;Sönke writes that you should add a new note to the slip-box directly behind thenote you are referring to. That creates one kind of link. He also writes thatyou can add it behind multiple notes by by referring to its unique in othernotes.Here is how I realized this aspect of the Zettelkasten method in Smart Notes:&lt;img src=&ldquo;uploads/2024/smart-notes-links.png&quot;width=&ldquo;600&rdquo; height=&ldquo;337&rdquo; alt=&ldquo;Screenshot of Smart Notes showing how notes andlinks are represented.&quot;&gt;Some design decisions and my reasoning about them:* Notes are visualized as a physical index cards. That restricts the amount of  text that you can write on them. I felt like a problem with a digital  approach might be that you write too much on your notes because there is  unlimited space. I was also interested in mimicking the feeling of working  with physical index cards on a table.* Links are visualized as strings between notes. You can link however you want.  In the above example, the note related to both notes are added behind both  the first note and the note that is related to the first note. (The note is  shown twice, but it is the same note.)* Note ids are not shown in the UI. In a physical Zettelkasten, note ids are  important to be able to find a note when following a link. (If a note says  &ldquo;see note X&rdquo; you need to be able to locate X in the slip-box.) But in  Smart Notes the link is right there and shows the note that it links to.## Trains of thought and branchesAnother aspect of the Zettelkasten method is trains of though. Notes related toeach other can form a train of thought, and reviewing that train of though isuseful. In a physical Zettelkasten related notes are stored close to eachother, and following a train of though can be done by flipping through thecards in an area.I was thinking about how this aspect of Zettelkasten could be realized in SmartNotes.I read more about how notes are stored and numbered in a physical Zettelkasten.There seems to be two cases. Either the note is related to an existing note, inwhich case it is put right behind it, or the note is not related to anyexisting notes, in which case it is put at the end.Furthermore, if a note is related to an existing note, a distinction seems tobe made if the new note continues the train of though of the previous note orif it branches off. With the Zettelkasten numbering system, it might bepossible to distinguish these different cases. In <a href="https://zettelkasten.de/introduction/">Introduction to theZettelkasten Method</a>, Sascha writes:&gt; The very first note is assigned the number 1. If you add a second note that&gt; is not related to the first note, it is assigned the number 2. But if you&gt; want to continue the first note, or inject something into its content,&gt; comment on it, or something along those lines, you branch off. That new note&gt; would get assigned the number 1a. If you continue with this new note, you&gt; would go on with 1b. If you then want to comment on the note 1a, you would&gt; create a note with the address 1a1. So, in short, whenever you continue a&gt; train of thought, you increment the last position in the address, be it&gt; number or a character from the alphabet. And when you want to expand,&gt; intersperse, or comment on a note, you take its address and append a new&gt; character.Smart Note lacks any visible note ids. So I was thinking that I might bemissing out on something. What types of hierarchies are created with thenumbering scheme in Zettelkasten? Can I already replicate those hierarchies inSmart Notes?## FolgezettelThere seems to be a debate going on whether the numbering scheme inZettelkasten, sometimes called &ldquo;folgezettel&rdquo; is useful or not.In <a href="https://zettelkasten.de/posts/luhmann-folgezettel-truth/">No, Luhmann was not aboutFolgezettel</a>, Saschaargues that the kind of links created with folgezettel are weak. We know thatthere is a relationship between two notes, but we don&rsquo;t know what thatrelationship is. Sascha further acknowledges that the folgezettel technique isprobably more practically useful in a physical Zettelkasten, but in a digitalworld, creating annotated links is a better solution. (Creating annotated linksis certainly possible in a physical Zettelkasten, but browsing those linkswould be tedious because the note in the link might be in a totally differentplace in the slip-box.)In <a href="https://writing.bobdoto.computer/folgezettel-is-more-than-mechanism/">Folgezettel is More thanMechanism</a>,Bob argues that the folgezettel technique is useful even in a digital world.One point is that it allows you to get a bird&rsquo;s eye view of the topics andthreads that are developing in your Zettelkasten. Another point is that itforces you to think about note relationships when you add notes to theslip-box.I&rsquo;m starting to think that the mechanism of folgezettel is just about creatinghierarchies of notes. That&rsquo;s certainly possible already in Smart Notes.Perhaps the numbering scheme is not essential to the Zettelkasten method?Perhaps I should explore annotated links more instead?## Annotated linksSascha&rsquo;s point about annotated links and their importance got me thinking howto apply it to Smart Notes. (In <a href="https://zettelkasten.de/posts/backlinks-are-bad-links/">Backlinking Is Not Very Useful &ndash; Often EvenHarmful</a>, Sascha talksmore about the importance of adding context to links.)Here is one thought I had about it early on:&gt; An unclear link between two notes can be clarified by inserting a note in&gt; between that explains the reason for the link. <code>A -&gt; B</code> can become <code>A -&gt;&gt; explanation -&gt; B</code>.Many years later, I tried this out. It looked like this:&lt;img src=&ldquo;uploads/2024/smart-notes-link-note.png&quot;width=&ldquo;600&rdquo; height=&ldquo;345&rdquo; alt=&ldquo;Screenshot of Smart Notes showing the use of alink note.&quot;&gt;I found that the &ldquo;explanation note&rdquo; took up much space and made it moredifficult to navigate the note network. That&rsquo;s when I decided that Smart Notesneeded the ability to annotate links instead. Here is how it turned out:&lt;imgsrc=&ldquo;<a href="https://rickardlindberg.me/uploads/2024/smart-notes-link-annotation.png%22width=%22600%22">https://rickardlindberg.me/uploads/2024/smart-notes-link-annotation.png&quot;width=&quot;600&quot;</a> height=&ldquo;345&rdquo; alt=&ldquo;Screenshot of Smart Notes showing linkannotations.&quot;&gt;I&rsquo;ve only experimented with this a little, but I find that navigation iseasier. My hope is that short &ldquo;linking phrases&rdquo; (inspired by <a href="https://en.wikipedia.org/wiki/Concept_map">conceptmapping</a>) will be enough to annotatelinks.## Closing thoughtsWith annotated links added, I think Smart Notes is pretty flexible. First ofall you can create arbitrary tree-like structures that can mimic the structureyou get from folgezettel without having to deal with a complicated numberingscheme. That structure can give you a bird&rsquo;s eye view that Bob talks about. Ifyou don&rsquo;t want to emphasize a tree structure, you can use annotated links tolink arbitrarily and make the context of the connections clear.I try to make Smart Notes a digital note taking application that followsprinciples from the Zettelkasten method. Sometimes it is easy to focus on thespecifics of the method and try to replicate it as closely as possible. But Ithink it is more important to experiment and see what works. Smart Notes hasbeen my way of exploring Zettelkasten, and I will continue to tweak it as Ilearn, both from reading and researching, and from practicing. Mostimportantly, I will try to use my notes for creative output and learning andtry to notice what features in Smart Notes maximize that.</p>
+			 <p>I created Smart Notes to be a digital note taking application that follows
+principles from the Zettelkasten method, as explained in Sönke Ahren&rsquo;s book
+<em>How to Take Smart Notes</em>.</p>
+<p>Two fundamental aspects of the Zettelkasten method are notes and links between
+them.</p>
+<p>In a physical Zettelkasten, notes are written on index cards (or some similar
+format), given unique, hierarchical ids, and stored sequentially in a slip-box:</p>
+<p><!-- raw HTML omitted --></p>
+<p>Sönke writes that you should add a new note to the slip-box directly behind the
+note you are referring to. That creates one kind of link. He also writes that
+you can add it behind multiple notes by by referring to its unique in other
+notes.</p>
+<p>Here is how I realized this aspect of the Zettelkasten method in Smart Notes:</p>
+<p><!-- raw HTML omitted --></p>
+<p>Some design decisions and my reasoning about them:</p>
+<ul>
+<li>
+<p>Notes are visualized as a physical index cards. That restricts the amount of
+text that you can write on them. I felt like a problem with a digital
+approach might be that you write too much on your notes because there is
+unlimited space. I was also interested in mimicking the feeling of working
+with physical index cards on a table.</p>
+</li>
+<li>
+<p>Links are visualized as strings between notes. You can link however you want.
+In the above example, the note related to both notes are added behind both
+the first note and the note that is related to the first note. (The note is
+shown twice, but it is the same note.)</p>
+</li>
+<li>
+<p>Note ids are not shown in the UI. In a physical Zettelkasten, note ids are
+important to be able to find a note when following a link. (If a note says
+&ldquo;see note X&rdquo; you need to be able to locate X in the slip-box.) But in
+Smart Notes the link is right there and shows the note that it links to.</p>
+</li>
+</ul>
+<h2 id="trains-of-thought-and-branches">Trains of thought and branches</h2>
+<p>Another aspect of the Zettelkasten method is trains of though. Notes related to
+each other can form a train of thought, and reviewing that train of though is
+useful. In a physical Zettelkasten related notes are stored close to each
+other, and following a train of though can be done by flipping through the
+cards in an area.</p>
+<p>I was thinking about how this aspect of Zettelkasten could be realized in Smart
+Notes.</p>
+<p>I read more about how notes are stored and numbered in a physical Zettelkasten.
+There seems to be two cases. Either the note is related to an existing note, in
+which case it is put right behind it, or the note is not related to any
+existing notes, in which case it is put at the end.</p>
+<p>Furthermore, if a note is related to an existing note, a distinction seems to
+be made if the new note continues the train of though of the previous note or
+if it branches off. With the Zettelkasten numbering system, it might be
+possible to distinguish these different cases. In <a href="https://zettelkasten.de/introduction/">Introduction to the
+Zettelkasten Method</a>, Sascha writes:</p>
+<blockquote>
+<p>The very first note is assigned the number 1. If you add a second note that
+is not related to the first note, it is assigned the number 2. But if you
+want to continue the first note, or inject something into its content,
+comment on it, or something along those lines, you branch off. That new note
+would get assigned the number 1a. If you continue with this new note, you
+would go on with 1b. If you then want to comment on the note 1a, you would
+create a note with the address 1a1. So, in short, whenever you continue a
+train of thought, you increment the last position in the address, be it
+number or a character from the alphabet. And when you want to expand,
+intersperse, or comment on a note, you take its address and append a new
+character.</p>
+</blockquote>
+<p>Smart Note lacks any visible note ids. So I was thinking that I might be
+missing out on something. What types of hierarchies are created with the
+numbering scheme in Zettelkasten? Can I already replicate those hierarchies in
+Smart Notes?</p>
+<h2 id="folgezettel">Folgezettel</h2>
+<p>There seems to be a debate going on whether the numbering scheme in
+Zettelkasten, sometimes called &ldquo;folgezettel&rdquo; is useful or not.</p>
+<p>In <a href="https://zettelkasten.de/posts/luhmann-folgezettel-truth/">No, Luhmann was not about
+Folgezettel</a>, Sascha
+argues that the kind of links created with folgezettel are weak. We know that
+there is a relationship between two notes, but we don&rsquo;t know what that
+relationship is. Sascha further acknowledges that the folgezettel technique is
+probably more practically useful in a physical Zettelkasten, but in a digital
+world, creating annotated links is a better solution. (Creating annotated links
+is certainly possible in a physical Zettelkasten, but browsing those links
+would be tedious because the note in the link might be in a totally different
+place in the slip-box.)</p>
+<p>In <a href="https://writing.bobdoto.computer/folgezettel-is-more-than-mechanism/">Folgezettel is More than
+Mechanism</a>,
+Bob argues that the folgezettel technique is useful even in a digital world.
+One point is that it allows you to get a bird&rsquo;s eye view of the topics and
+threads that are developing in your Zettelkasten. Another point is that it
+forces you to think about note relationships when you add notes to the
+slip-box.</p>
+<p>I&rsquo;m starting to think that the mechanism of folgezettel is just about creating
+hierarchies of notes. That&rsquo;s certainly possible already in Smart Notes.
+Perhaps the numbering scheme is not essential to the Zettelkasten method?
+Perhaps I should explore annotated links more instead?</p>
+<h2 id="annotated-links">Annotated links</h2>
+<p>Sascha&rsquo;s point about annotated links and their importance got me thinking how
+to apply it to Smart Notes. (In <a href="https://zettelkasten.de/posts/backlinks-are-bad-links/">Backlinking Is Not Very Useful &ndash; Often Even
+Harmful</a>, Sascha talks
+more about the importance of adding context to links.)</p>
+<p>Here is one thought I had about it early on:</p>
+<blockquote>
+<p>An unclear link between two notes can be clarified by inserting a note in
+between that explains the reason for the link. <code>A -&gt; B</code> can become <code>A -&gt; explanation -&gt; B</code>.</p>
+</blockquote>
+<p>Many years later, I tried this out. It looked like this:</p>
+<p><!-- raw HTML omitted --></p>
+<p>I found that the &ldquo;explanation note&rdquo; took up much space and made it more
+difficult to navigate the note network. That&rsquo;s when I decided that Smart Notes
+needed the ability to annotate links instead. Here is how it turned out:</p>
+<p><!-- raw HTML omitted --></p>
+<p>I&rsquo;ve only experimented with this a little, but I find that navigation is
+easier. My hope is that short &ldquo;linking phrases&rdquo; (inspired by <a href="https://en.wikipedia.org/wiki/Concept_map">concept
+mapping</a>) will be enough to annotate
+links.</p>
+<h2 id="closing-thoughts">Closing thoughts</h2>
+<p>With annotated links added, I think Smart Notes is pretty flexible. First of
+all you can create arbitrary tree-like structures that can mimic the structure
+you get from folgezettel without having to deal with a complicated numbering
+scheme. That structure can give you a bird&rsquo;s eye view that Bob talks about. If
+you don&rsquo;t want to emphasize a tree structure, you can use annotated links to
+link arbitrarily and make the context of the connections clear.</p>
+<p>I try to make Smart Notes a digital note taking application that follows
+principles from the Zettelkasten method. Sometimes it is easy to focus on the
+specifics of the method and try to replicate it as closely as possible. But I
+think it is more important to experiment and see what works. Smart Notes has
+been my way of exploring Zettelkasten, and I will continue to tweak it as I
+learn, both from reading and researching, and from practicing. Most
+importantly, I will try to use my notes for creative output and learning and
+try to notice what features in Smart Notes maximize that.</p>
 
 		</div>
 	  </div>
