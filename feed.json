@@ -7,6 +7,24 @@
 	"items": [
 		
 			{
+				"id": "http://rickardlindberg.micro.blog/2024/11/28/sometimes-i-solve.html",
+				
+				"content_html": "<p>Sometimes, I solve programming problems by coding on paper. A few days ago, it looked like this:</p>\n<!-- raw HTML omitted -->\n",
+				"content_text": "Sometimes, I solve programming problems by coding on paper. A few days ago, it looked like this:\n\n<img src=\"uploads/2024/code-on-paper-nov28.png\" width=\"600\" height=\"512\" alt=\"A piece of paper with source code written on it with annotations.\">\n",
+				"date_published": "2024-11-28T07:40:09+01:00",
+				"url": "https://rickardlindberg.me/2024/11/28/sometimes-i-solve.html",
+				"tags": ["rledit"]
+			},
+			{
+				"id": "http://rickardlindberg.micro.blog/2024/11/28/ive-started-working.html",
+				
+				"content_html": "<p>I&rsquo;ve started working on a code editor that is a mix of a text editor and a structured editor. It is all text, but parsers and pretty printers allow you to work with a tree structure and not think too much about syntax. It is a work in progress. Code is <a href=\"https://github.com/rickardlindberg/rleditor\">here</a>.</p>\n<!-- raw HTML omitted -->\n",
+				"content_text": "I've started working on a code editor that is a mix of a text editor and a structured editor. It is all text, but parsers and pretty printers allow you to work with a tree structure and not think too much about syntax. It is a work in progress. Code is [here](https://github.com/rickardlindberg/rleditor).\r\n\r\n<img src=\"uploads/2024/rledit-nov28.png\" width=\"478\" height=\"333\" alt=\"Screenshot of rledit editing a JSON document with a selection.\">\r\n",
+				"date_published": "2024-11-28T07:31:39+01:00",
+				"url": "https://rickardlindberg.me/2024/11/28/ive-started-working.html",
+				"tags": ["rledit"]
+			},
+			{
 				"id": "http://rickardlindberg.micro.blog/2024/11/23/we-got-some.html",
 				
 				"content_html": "<p>We got some more snow. I like running in the winter. Especially when there is snow and the sun is shining.</p>\n<!-- raw HTML omitted -->\n",
