@@ -7,6 +7,15 @@
 	"items": [
 		
 			{
+				"id": "http://rickardlindberg.micro.blog/2024/12/04/today-i-ran.html",
+				
+				"content_html": "<p>Today I ran part of the way to work. It was a cold, beautiful winter morning in Stockholm.</p>\n<!-- raw HTML omitted -->\n",
+				"content_text": "Today I ran part of the way to work. It was a cold, beautiful winter morning in Stockholm.\r\n\r\n<img src=\"uploads/2024/running-dec04.jpg\" width=\"600\" height=\"337\" alt=\"Me running with water and Stockholm City Hall in the background.\">\n",
+				"date_published": "2024-12-04T22:37:47+01:00",
+				"url": "https://rickardlindberg.me/2024/12/04/today-i-ran.html",
+				"tags": ["Running"]
+			},
+			{
 				"id": "http://rickardlindberg.micro.blog/2024/11/28/sometimes-i-solve.html",
 				
 				"content_html": "<p>Sometimes, I solve programming problems by coding on paper. A few days ago, it looked like this:</p>\n<!-- raw HTML omitted -->\n",
@@ -46,7 +55,7 @@
 				"id": "http://rickardlindberg.micro.blog/2024/11/20/today-was-the.html",
 				
 				"content_html": "<p>Today was the first day of snow this season. Not much. I&rsquo;m looking forward to many more runs on a white trail.</p>\n<!-- raw HTML omitted -->\n",
-				"content_text": "Today was the first day of snow this season. Not much. I'm looking forward to many more runs on a white trail.\r\n\r\n<img src=\"uploads/2024/running-nov20.jpg\" width=\"600\" height=\"337\" alt=\"Me running on a trail with a little snow.\">\n",
+				"content_text": "Today was the first day of snow this season. Not much. I'm looking forward to many more runs on a white trail.\r\n\r\n<img src=\"https://cdn.uploads.micro.blog/173380/2024/running-nov20.jpg\" width=\"600\" height=\"337\" alt=\"Me running on a trail with a little snow.\">\n",
 				"date_published": "2024-11-20T21:17:43+01:00",
 				"url": "https://rickardlindberg.me/2024/11/20/today-was-the.html",
 				"tags": ["Running"]
