@@ -24,6 +24,77 @@
 	
 	  <div class="h-entry">
 		
+
+		<a href="https://rickardlindberg.me/2025/01/13/todays-realization-is-that-you.html" class="u-url"><time class="dt-published" datetime="2025-01-13 21:37:56 &#43;0100">Jan 13, 2025</time></a>
+
+		<div class="e-content">
+			 <p>Today&rsquo;s realization is that you can get important things done by consistently working on them for 15 minutes at the start of every day.</p>
+<p>By doing it at the start of the day, you ensure that it gets done. And the rest of the day you don&rsquo;t need to be stressed about not working on your important thing, because you already have.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://rickardlindberg.me/2025/01/12/newsletter-december-advent-of-code.html">Newsletter December 2024: Advent of Code</a></h1>
+		
+
+		<a href="https://rickardlindberg.me/2025/01/12/newsletter-december-advent-of-code.html" class="u-url"><time class="dt-published" datetime="2025-01-12 12:45:36 &#43;0100">Jan 12, 2025</time></a>
+
+		<div class="e-content">
+			 <p>December is the month of <a href="https://adventofcode.com/">Advent of Code</a>. I had
+told myself not to participate this year because I know I get <a href="https://youtu.be/stBGg7v-URg">completely
+consumed</a> by the problems and it has a negative
+impact on the rest of my life. It worked. Until December 15th. More on that
+later.</p>
+<h2 id="code-editor-update">Code Editor Update</h2>
+<p><a href="https://rickardlindberg.me/2024/12/08/newsletter-november-a.html">Last month</a>
+I started working on a <a href="https://github.com/rickardlindberg/rleditor">new code
+editor</a>. It is a mix of a text
+editor and a structured editor. It is all text, but parsers and pretty printers
+allow you to work with a tree structure and not think too much about syntax.</p>
+<p>I continued working on it this month. The big achievement was that I added
+support for another language in addition to JSON. The other language is
+<a href="https://rickardlindberg.me/categories/rlmeta/">rlmeta</a>. Here is a screenshot
+showing the parser opened in the editor:</p>
+<p><!-- raw HTML omitted --></p>
+<p>This is a big achievement because it ties everything together. You define a
+parser and a pretty printer for your language. That gives you all editing
+capabilities. However, you can also write a code generator, and now you have a
+full blown programming language with editing support &ldquo;for free&rdquo;. This
+potentially provides an environment to quickly experiment with new programming
+languages.</p>
+<p>Conceptually, I&rsquo;m quite happy with this achievement. However, there are many
+things to work on before this is &ldquo;production ready&rdquo;. First of all, the
+performance is pretty horrible because of the constant parsing and pretty
+printing. Second of all, I need to see if a tree based editor can actually
+become better than a regular text editor.</p>
+<h2 id="advent-of-code">Advent of Code</h2>
+<p>I couldn&rsquo;t help myself but to participate this year as well. The experience was
+not as stressful as last year. I still got consumed by the problems, but the
+feeling was mostly positive. I managed to complete all but 3 problems. Right
+now, the interest to complete them is pretty low. I might take a look at other
+solutions to see if I can learn something from that.</p>
+<p>My approach to solving the problems is that I try to solve them in order, and I
+don&rsquo;t look at others' solutions until I have solved both parts. However, I&rsquo;m
+out of ideas to try on the last problems, and I think the competition part is
+over by now. I might learn something for next year if I look at solutions now.</p>
+<p>This year I also practiced object oriented design. So my solutions involve many
+small objects interacting with each other to produce a solution. It was mostly
+a success I think. One of my favorite solutions is for <a href="https://github.com/rickardlindberg/aoc24/blob/main/11.py">day
+11</a>.</p>
+<p>This year I also think that I got the hang of Dijkstra and A*. (I found
+<a href="https://www.redblobgames.com/pathfinding/a-star/introduction.html">Introduction to the A*
+Algorithm</a>
+from Red Blob Games really helpful.)</p>
+<p>You can find all my solutions on
+<a href="https://github.com/rickardlindberg/aoc24">GitHub</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://rickardlindberg.me/2024/12/08/newsletter-november-a.html">Newsletter November 2024: A New Project</a></h1>
 		
 
@@ -2918,8 +2989,120 @@ the experience of first learning to program. I wish more environments had a
 		<a href="https://rickardlindberg.me/2017/05/19/evolution-of-recalling.html" class="u-url"><time class="dt-published" datetime="2017-05-19 01:00:00 &#43;0100">May 19, 2017</time></a>
 
 		<div class="e-content">
-			 <p>This post has not yet been imported to my new blog.</p>
-<p>In the meantime, you can read it here: <a href="http://archive.rickardlindberg.me/writing/evolution-recalling-bash-history/">http://archive.rickardlindberg.me/writing/evolution-recalling-bash-history/</a>.</p>
+			 <p>This article is about how I&rsquo;ve become more efficient at using Bash, the
+interactive UNIX shell.</p>
+<p>When I work in Bash, I often want to execute a command again. In the beginning
+I re-typed the command and pressed enter. This worked fine for short commands,
+but became tedious for longer commands.</p>
+<p>In some shells this is the only way to enter a new command. But Bash remembers
+the recently executed commands and provides ways to recall them.</p>
+<h2 id="cycle-with-arrow-keys">Cycle with arrow keys</h2>
+<p>The first way I learned to recall history was with the arrow keys. If I pressed
+<!-- raw HTML omitted -->Up<!-- raw HTML omitted --> the previous command was inserted at the prompt. I could continue
+for as long as I wanted. If I pressed <!-- raw HTML omitted -->Down<!-- raw HTML omitted --> the next command was
+inserted at the prompt:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ ls&lt;Enter&gt;
+bin         ...
+
+$ date&lt;Enter&gt;
+Wed May 10 08:14:46 CEST 2017
+
+$ &lt;Up&gt;
+
+$ date&lt;Up&gt;
+
+$ ls&lt;Down&gt;
+
+$ date&lt;Enter&gt;
+Wed May 10 08:14:59 CEST 2017
+</code></pre></div><p>This worked fine for commands that I had executed recently, but tedious for
+commands that I had executed long ago because I had to press <!-- raw HTML omitted -->Up<!-- raw HTML omitted --> many
+times.  I ended up pressing and holding <!-- raw HTML omitted -->Up<!-- raw HTML omitted --> so that history scrolled
+by and when I saw my command, I released the key and pressed <!-- raw HTML omitted -->Down<!-- raw HTML omitted -->
+until it appeared again.</p>
+<h2 id="cycle-with-ctrl-pctrl-n">Cycle with Ctrl-P/Ctrl-N</h2>
+<p>Later I learned that <!-- raw HTML omitted -->Ctrl-P<!-- raw HTML omitted --> (previous) had the same function as
+<!-- raw HTML omitted -->Up<!-- raw HTML omitted --> and that <!-- raw HTML omitted -->Ctrl-N<!-- raw HTML omitted --> (next) had the same function as
+<!-- raw HTML omitted -->Down<!-- raw HTML omitted -->.</p>
+<p>These shortcuts were more comfortable for me because I like to keep my fingers
+as close to the home row as possible.</p>
+<h2 id="searching-with-ctrl-r">Searching with Ctrl-R</h2>
+<p>Then I learned about Bash&rsquo;s interactive history search command. If I pressed
+<!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted --> the prompt changed to this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(reverse-i-search)`&#39;:
+</code></pre></div><p>This special prompt allowed me to type parts of a command that I had executed
+previously. Say I wanted to execute the last find command again. I typed
+&ldquo;find&rdquo; and the prompt changed to this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(reverse-i-search)`find&#39;: find -name &#39;*.py&#39; -a -type f
+</code></pre></div><p>The text I typed, &ldquo;find&rdquo;, was present before the colon. After the colon the
+last command that I had executed that contained the string &ldquo;find&rdquo; was
+displayed. In this case I did a search for Python files. If this was not the
+match I was looking for, I could hit <!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted --> again and the part to
+the right of the colon would change to the next command in the history that
+contained the string &ldquo;find&rdquo;. Once I found the command I was looking for I had
+two options: I could hit <!-- raw HTML omitted -->Tab<!-- raw HTML omitted --> to insert the command at the prompt:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ find -name <span style="color:#e6db74">&#39;*.py&#39;</span> -a -type f
+</code></pre></div><p>This way I could edit the command before I executed it. Or I could hit
+<!-- raw HTML omitted -->Enter<!-- raw HTML omitted --> to execute the command directly.</p>
+<p>Now I was able to recall commands that I had executed long ago. I almost
+replaced all my usages of <!-- raw HTML omitted -->Ctrl-P<!-- raw HTML omitted -->/<!-- raw HTML omitted -->Ctrl-N<!-- raw HTML omitted --> with
+<!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted -->. Except for the cases where I knew that the command I wanted
+to recall was only a few entries back.</p>
+<h2 id="frustrations-with-ctrl-r">Frustrations with Ctrl-R</h2>
+<p>The interactive search worked great for me when I knew what I was looking for.
+It did not work so great when I was more uncertain or when I mistyped the name
+of a command.</p>
+<p>The interactive search works by having a pointer to en entry in the history.
+When I typed a command it would move that pointer to the next item in the
+history that matched. But if I mistyped, the search might still match something
+further back in history. But when I erased a few characters to correct my
+mistake, the search would continue from there. Say this was my history:</p>
+<ol>
+<li><code>tac ~/.bash_history</code></li>
+<li><code>echo frustration</code></li>
+<li><code>echo with</code></li>
+<li><code>echo bash</code></li>
+</ol>
+<p>I hit <!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted --> to to begin searching for &ldquo;bash&rdquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(reverse-i-search)`&#39;:
+</code></pre></div><p>But I mistyped. Instead of &ldquo;b&rdquo; I typed &ldquo;f&rdquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(reverse-i-search)`f&#39;: echo frustration
+</code></pre></div><p>The search matched item 2. I erased the incorrectly typed character:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(reverse-i-search)`&#39;: echo frustration
+</code></pre></div><p>The match remained. I typed bash correctly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(reverse-i-search)`bash&#39;: tac ~/.bash_history
+</code></pre></div><p>It now matched item 1 instead of item 4. The search continued from the previous
+match. I would have wanted the search to always show the most recent match from
+history. The easiest way I found to reset the search after a failure to find
+what I was looking for was to just execute a dummy command. Usually I selected
+<code>ls</code> because it was short to type and had no side effects.</p>
+<h2 id="interactively-filtering-with-external-program">Interactively filtering with external program</h2>
+<p>Then I was introduced to <a href="https://github.com/dvorka/hstr">hstr</a> by a colleague.
+It worked like a replacement for <!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted -->. When I invoked it, it
+dropped into a text UI where my last history entries were shown. I could
+also type part of a command to narrow down the list. If I changed the search
+string, the narrowed down list changed accordingly.  When I found a match I
+could similarly press <!-- raw HTML omitted -->Tab<!-- raw HTML omitted --> to insert the command at the prompt or
+press <!-- raw HTML omitted -->Enter<!-- raw HTML omitted --> to execute it immediately. It looked like this:</p>
+<p><a href="https://github.com/dvorka/hstr"><img src="/writing/evolution-recalling-bash-history/hh-animated-01.gif" alt=""></a>
+<!-- raw HTML omitted --></p>
+<p>This solved my frustrations with Bash&rsquo;s interactive search. For me, this was a
+far easier way to find items from my history. The fact that it showed the last
+commands also helped me. I could visually inspect them, and they would guide my
+search.</p>
+<p>hstr was so good that I wanted to use a similar selection mechanism for other
+things, but hstr was only for Bash history. I ended up writing my own selection
+program: <a href="/projects/rlselect/index.html">rlselect</a>. Partly because I wanted
+such a program, but also because it seemed like a fun program to write. The
+core selection program is called <code>rlselect</code> and then there are multiple
+programs that use it to allow selecting specific things. <code>rlselect-history</code> is
+a replacement for <!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted -->/hstr:</p>
+<p><!-- raw HTML omitted --></p>
+<p>There are some differences between hstr and <code>rlselect-history</code>. I took only the
+parts I personally wanted from hstr and put them into <code>rlselect-history</code>.</p>
+<p>If you want to improve your Bash usage, I suggest taking a look at
+<a href="https://github.com/dvorka/hstr">hstr</a> or
+<a href="/projects/rlselect/index.html">rlselect</a>.</p>
 
 		</div>
 	  </div>
