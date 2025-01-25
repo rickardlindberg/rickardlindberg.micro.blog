@@ -24,6 +24,190 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://rickardlindberg.me/2025/01/19/replacing-ctrlr-in-bash-without.html">Replacing Ctrl-R in Bash without TIOCSTI</a></h1>
+		
+
+		<a href="https://rickardlindberg.me/2025/01/19/replacing-ctrlr-in-bash-without.html" class="u-url"><time class="dt-published" datetime="2025-01-19 06:11:50 &#43;0100">Jan 19, 2025</time></a>
+
+		<div class="e-content">
+			 <p>I have <a href="https://rickardlindberg.me/2017/05/19/evolution-of-recalling.html">previously
+written</a>
+about how I use <a href="https://rickardlindberg.me/projects/rlselect/">rlselect</a> as a
+replacement for Ctrl+R in Bash.</p>
+<p>It works by creating a key binding in Bash for Ctrl+R that invokes <code>rlselect</code>
+instead of the default Bash interactive history search command. <code>rlselect</code>
+looks something like this:</p>
+<p><!-- raw HTML omitted --></p>
+<p>If you press tab, the current selection is inserted at the prompt. If you press
+enter, the current selection is executed. This is the same behavior as the
+default Ctrl+R.</p>
+<p>The mechanism for this stopped working in recent Linux kernel versions. I
+figured out how to solve it and in this blog post I explain how.</p>
+<h2 id="old-mechanism">Old Mechanism</h2>
+<p>When <code>rlselect</code> is invoked from Ctrl+R, it is invoked with the <code>--tab</code> and
+<code>--action</code> flags. The first flag allows the tab key to be used to select a line
+and the second makes <code>rlselect</code> print the action taken on the first line
+before to the selection.</p>
+<p>Here is an example where enter is pressed when &ldquo;hello&rdquo; is selected:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ (echo hello; echo world) | rlselect --tab --action
+enter
+hello
+</code></pre></div><p>Here is an example where tab is pressed when &ldquo;world&rdquo; is selected:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ (echo hello; echo world) | rlselect --tab --action
+tab
+world
+</code></pre></div><p>Here is an example where Ctrl+G is pressed:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ (echo hello; echo world) | rlselect --tab --action
+ctrl-g
+</code></pre></div><p>Ctrl+G aborts, so no selection is printed on the second line.</p>
+<p>To feed this output to the prompt, TIOCSTI is used. It simulates that you type
+characters in the terminal. The full script that Ctrl+R invokes looks like
+this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">set -e
+
+result<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>tac ~/.bash_history | rlselect --tab --action -- <span style="color:#e6db74">&#34;</span>$@<span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">)</span>
+
+python - <span style="color:#e6db74">&#34;</span>$result<span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&lt;&lt; EOF
+</span><span style="color:#e6db74">import fcntl
+</span><span style="color:#e6db74">import sys
+</span><span style="color:#e6db74">import termios
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">action, selection = sys.argv[1].split(&#34;\n&#34;, 1)
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">if action != &#34;tab&#34;:
+</span><span style="color:#e6db74">    selection += &#34;\n&#34;
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">for ch in selection:
+</span><span style="color:#e6db74">    fcntl.ioctl(sys.stdout.fileno(), termios.TIOCSTI, ch)
+</span><span style="color:#e6db74">EOF</span>
+</code></pre></div><p>The last part is where TIOCSTI is used to simulate that you press the keys
+of the selection. Unless tab is pressed, it appends a newline to the
+selection to simulate that Enter is pressed.</p>
+<p>The Bash configuration looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">if</span> <span style="color:#f92672">[[</span> $- <span style="color:#f92672">=</span>~ .*i.* <span style="color:#f92672">]]</span>; <span style="color:#66d9ef">then</span> bind <span style="color:#e6db74">&#39;&#34;\C-r&#34;: &#34;\C-a rlselect-history \C-j&#34;&#39;</span>; <span style="color:#66d9ef">fi</span>
+</code></pre></div><p>Here is how it works:</p>
+<ul>
+<li>Ctrl+R is bound to a series of keystrokes.</li>
+<li>First Ctrl+A is simulated which takes the cursor to the beginning of the
+line.</li>
+<li>Then <code>&lt;space&gt;rlselect-history&lt;space&gt;</code> is typed.</li>
+<li>Then Ctrl+J is simulated which means accept the current line. Or execute it.
+The initial space entered in the previous step ensures that the
+<code>rlselect-history</code> command does not end up in the history. The moving of the
+cursor to the beginning of the line ensures that anything typed at the prompt
+is passed as an argument to <code>rlselect-history</code>.</li>
+</ul>
+<p>(This configuration also makes the text <code> rlselect-history ...</code> appear in the
+terminal. The new mechanism makes that go away.)</p>
+<p>This mechanism stopped working in recent Linux kernel versions because TIOCSTI
+can not be used like this. There is apparently security issues with TIOCSTI and
+it is now only allowed as root.</p>
+<h2 id="new-mechanism">New Mechanism</h2>
+<p>The new Bash configuration for Ctrl+R behavior that I came up with looks like
+this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rlselect-history<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+    local action
+    local selection
+    <span style="color:#f92672">{</span>
+        read action
+        read selection
+    <span style="color:#f92672">}</span> &lt; &lt;<span style="color:#f92672">(</span>tac ~/.bash_history | rlselect --tab --action -- <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>READLINE_LINE<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">)</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$action<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tab&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+        READLINE_LINE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>selection<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+        READLINE_POINT<span style="color:#f92672">=</span><span style="color:#e6db74">${#</span>READLINE_LINE<span style="color:#e6db74">}</span>
+        bind <span style="color:#e6db74">&#39;&#34;\C-x2&#34;:&#39;</span> <span style="color:#75715e"># Bind Ctrl+x+2 to do nothing</span>
+    <span style="color:#66d9ef">elif</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$action<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;enter&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+        READLINE_LINE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>selection<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+        READLINE_POINT<span style="color:#f92672">=</span><span style="color:#e6db74">${#</span>READLINE_LINE<span style="color:#e6db74">}</span>
+        bind <span style="color:#e6db74">&#39;&#34;\C-x2&#34;: accept-line&#39;</span> <span style="color:#75715e"># Bind Ctrl+x+2 to accept line</span>
+    <span style="color:#66d9ef">else</span>
+        bind <span style="color:#e6db74">&#39;&#34;\C-x2&#34;:&#39;</span> <span style="color:#75715e"># Bind Ctrl+x+2 to do nothing</span>
+    <span style="color:#66d9ef">fi</span>
+<span style="color:#f92672">}</span>
+
+<span style="color:#66d9ef">if</span> <span style="color:#f92672">[[</span> $- <span style="color:#f92672">=</span>~ .*i.* <span style="color:#f92672">]]</span>; <span style="color:#66d9ef">then</span>
+    <span style="color:#75715e"># Bind history command to Ctrl+x+1 followed by Ctrl+x+2:</span>
+    bind <span style="color:#e6db74">&#39;&#34;\C-r&#34;: &#34;\C-x1\C-x2&#34;&#39;</span>
+    <span style="color:#75715e"># Bind Ctrl+x+1 to execute rlselect-history which does two things:</span>
+    <span style="color:#75715e"># 1. Sets READLINE_*</span>
+    <span style="color:#75715e"># 2. Binds Ctrl+x+2 to either accept line or do nothing.</span>
+    bind -x <span style="color:#e6db74">&#39;&#34;\C-x1&#34;: rlselect-history&#39;</span>
+<span style="color:#66d9ef">fi</span>
+</code></pre></div><p>Let&rsquo;s break this down.</p>
+<ul>
+<li>
+<p>Ctrl+R is bound to a series of keystrokes.</p>
+</li>
+<li>
+<p>First Ctrl+X+1 is simulated.</p>
+</li>
+<li>
+<p>Then Ctrl+X+2 is simulated.</p>
+</li>
+<li>
+<p>Ctrl+X+1 is bound to execute the command <code>rlselect-history</code>. The <code>-x</code> to bind
+ensures that the variables <code>READLINE_*</code> can be set. From <code>man bash</code> on <code>set -x</code>:</p>
+<blockquote>
+<p>Cause shell-command to  be executed  whenever keyseq is entered. When
+shell-command is executed, the shell sets the READLINE_LINE variable to the
+contents of the readline line buffer and the READLINE_POINT and
+READLINE_MARK variables [&hellip;] If the executed command changes the value of
+any of READLINE_LINE, READLINE_POINT, or READLINE_MARK, those new values
+will be reflected in the editing state.</p>
+</blockquote>
+</li>
+<li>
+<p><code>rlselect-history</code> is defined as a Bash function which allows it to
+reconfigure the key binding for Ctrl+X+2. Depending on if the current
+selection should be executed or not, it binds Ctrl+X+2 to either
+<code>accept-line</code> or nothing.</p>
+</li>
+</ul>
+<p>So the new mechanism relies on using two extra key bindings: Ctrl+X+1 and
+Ctrl+X+2. I chose them because I don&rsquo;t use them otherwise. But they can be any
+two key bindings.</p>
+<p>The trick to finding this solution for me was understanding Bash key bindings.
+<a href="https://stackoverflow.com/a/13978131">This answer</a> on StackOverflow writes the
+following:</p>
+<blockquote>
+<p>With <code>bind</code>, you can bind keys to do one of three things, but no combination
+of them:</p>
+<ul>
+<li>Execute a readline command: <code>bind '&quot;key&quot;: command'</code></li>
+<li>Execute a series of keystrokes: <code>bind '&quot;key&quot;:&quot;keystrokes&quot;'</code></li>
+<li>Execute a shell command: <code>bind -x '&quot;key&quot;: shell-command'</code></li>
+</ul>
+</blockquote>
+<p>That made me understand that you can not call <code>accept-line</code> from within
+<code>rlselect-history</code> because it is executed in the context of <code>bind -x</code>, and
+readline commands can only be executed in the context of <code>bind '&quot;key&quot;: command'</code>.</p>
+<h2 id="resources">Resources</h2>
+<p>Here are some resources that talks about the problem with TIOCSTI that helped
+me:</p>
+<ul>
+<li>
+<p><a href="https://github.com/dvorka/hstr">hstr</a> (the program that initially inspired
+me to write <code>rlselect</code>) had a <a href="https://github.com/dvorka/hstr/issues/478">similar
+problem</a> and I found clues to my
+solution there.</p>
+</li>
+<li>
+<p>The <a href="https://github.com/4z3/fzf-plugins">fzf-plugins</a> repo and <a href="https://github.com/junegunn/fzf/pull/1492">this
+dicussion</a> provides a similar
+solution for <a href="https://github.com/junegunn/fzf">fzf</a>.</p>
+</li>
+<li>
+<p>The article <a href="https://countdigi.github.io/post/2021/08/readline-and-fuzzy-finder/">Readline and Fuzzy
+Finder</a>
+helped me understand how to work with <code>READLINE_*</code> in Bash.</p>
+</li>
+</ul>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 
 		<a href="https://rickardlindberg.me/2025/01/13/todays-realization-is-that-you.html" class="u-url"><time class="dt-published" datetime="2025-01-13 21:37:56 &#43;0100">Jan 13, 2025</time></a>
 
@@ -3041,7 +3225,7 @@ match I was looking for, I could hit <!-- raw HTML omitted -->Ctrl-R<!-- raw HTM
 the right of the colon would change to the next command in the history that
 contained the string &ldquo;find&rdquo;. Once I found the command I was looking for I had
 two options: I could hit <!-- raw HTML omitted -->Tab<!-- raw HTML omitted --> to insert the command at the prompt:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ find -name <span style="color:#e6db74">&#39;*.py&#39;</span> -a -type f
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ find -name &#39;*.py&#39; -a -type f
 </code></pre></div><p>This way I could edit the command before I executed it. Or I could hit
 <!-- raw HTML omitted -->Enter<!-- raw HTML omitted --> to execute the command directly.</p>
 <p>Now I was able to recall commands that I had executed long ago. I almost
@@ -3084,15 +3268,14 @@ also type part of a command to narrow down the list. If I changed the search
 string, the narrowed down list changed accordingly.  When I found a match I
 could similarly press <!-- raw HTML omitted -->Tab<!-- raw HTML omitted --> to insert the command at the prompt or
 press <!-- raw HTML omitted -->Enter<!-- raw HTML omitted --> to execute it immediately. It looked like this:</p>
-<p><a href="https://github.com/dvorka/hstr"><img src="/writing/evolution-recalling-bash-history/hh-animated-01.gif" alt=""></a>
-<!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
 <p>This solved my frustrations with Bash&rsquo;s interactive search. For me, this was a
 far easier way to find items from my history. The fact that it showed the last
 commands also helped me. I could visually inspect them, and they would guide my
 search.</p>
 <p>hstr was so good that I wanted to use a similar selection mechanism for other
 things, but hstr was only for Bash history. I ended up writing my own selection
-program: <a href="/projects/rlselect/index.html">rlselect</a>. Partly because I wanted
+program: <a href="/projects/rlselect/">rlselect</a>. Partly because I wanted
 such a program, but also because it seemed like a fun program to write. The
 core selection program is called <code>rlselect</code> and then there are multiple
 programs that use it to allow selecting specific things. <code>rlselect-history</code> is
@@ -3102,7 +3285,7 @@ a replacement for <!-- raw HTML omitted -->Ctrl-R<!-- raw HTML omitted -->/hstr:
 parts I personally wanted from hstr and put them into <code>rlselect-history</code>.</p>
 <p>If you want to improve your Bash usage, I suggest taking a look at
 <a href="https://github.com/dvorka/hstr">hstr</a> or
-<a href="/projects/rlselect/index.html">rlselect</a>.</p>
+<a href="/projects/rlselect/">rlselect</a>.</p>
 
 		</div>
 	  </div>
